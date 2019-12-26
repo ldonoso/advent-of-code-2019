@@ -3,6 +3,8 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 
+module Day5 where 
+
 import Data.List.Split
 import Control.Monad.ST
 import Data.Array.ST
@@ -54,7 +56,7 @@ processPos arr input p = do
                 1 -> (performOp (+) m1 m2 m3) >> nextPost 4 p
                 2 -> (performOp (*) m1 m2 m3) >> nextPost 4 p
                 99 -> return (-1)
-                3 -> (writeA arr (p + 1) m1 input) >> nextPost 2 p  -- Input
+                3 -> (writeA arr (p + 1) m1 (head input)) >> nextPost 2 p  -- Input
                 4 -> do -- Output
                         out <- readA arr (p + 1) m1
                         (trace (show out) (nextPost 2 p))  -- Output
@@ -67,7 +69,7 @@ processPos arr input p = do
                 7 -> (performOp (\x y -> if x < y then 1 else 0) m1 m2 m3) >> nextPost 4 p
                 8 -> (performOp (\x y -> if x == y then 1 else 0) m1 m2 m3) >> nextPost 4 p
 
-    return nextP
+    return (op, nextP)
 
         where
             nextPost size p = do
@@ -84,16 +86,21 @@ processPos arr input p = do
 createMArray :: [Int] -> MyST s
 createMArray xs = newListArray (0, (length xs) - 1) xs
 
-runProgram :: [Int] -> Int -> MyST s
 runProgram xs input = do
     arr <- createMArray xs
-    poss <- myUntil (< 0) (processPos arr input) 0
+    pos <- go arr 0 input
+
     return arr
 
+    where go arr pos input
+            | pos < 0 = return pos
+            | otherwise = do
+                        (op, pos2) <- processPos arr input pos
+                        go arr pos2 (if op == 3 then tail input else input)
+
 resolve xs =
-    let sol1 = (runSTUArray $ runProgram xs 1) ! 0
-        -- (n, v) = resolve2 xs
-        sol2 = (runSTUArray $ runProgram xs 5) ! 0
+    let sol1 = (runSTUArray $ runProgram xs [1]) ! 0
+        sol2 = (runSTUArray $ runProgram xs [5]) ! 0
     in (sol1, sol2)
 
 main :: IO ()
