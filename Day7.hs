@@ -20,10 +20,10 @@ comb xs = concat $ fmap go xs
     where go x = (x :) <$> comb (L.delete x xs)
 
 runProgram arr posIni input = do
-    s <- go arr (D5.State posIni input [])
+    s <- go arr (D5.State posIni input [] 0)
     return s
 
-    where go arr s@(D5.State pos input output)
+    where go arr s@(D5.State pos input output relBase)
             | pos < 0 = return s
             | not (L.null output) = return s  -- Stop at first output
             | otherwise = do
@@ -32,43 +32,43 @@ runProgram arr posIni input = do
 
 runProgram2 phases xs = do
     arr0 <- D5.createMArray xs
-    (D5.State pos0 i0 o0) <- runProgram arr0 0 [phases !! 0, 0]
+    (D5.State pos0 i0 o0 _) <- runProgram arr0 0 [phases !! 0, 0]
 
     arr1 <- D5.createMArray xs
-    (D5.State pos1 i1 o1) <- runProgram arr1 0 [phases !! 1, head o0]
+    (D5.State pos1 i1 o1 _) <- runProgram arr1 0 [phases !! 1, head o0]
 
     arr2 <- D5.createMArray xs
-    (D5.State pos2 i2 o2) <- runProgram arr2 0 [phases !! 2, head o1]
+    (D5.State pos2 i2 o2 _) <- runProgram arr2 0 [phases !! 2, head o1]
 
     arr3 <- D5.createMArray xs
-    (D5.State pos3 i3 o3) <- runProgram arr3 0 [phases !! 3, head o2]
+    (D5.State pos3 i3 o3 _) <- runProgram arr3 0 [phases !! 3, head o2]
 
     arr4 <- D5.createMArray xs
-    (D5.State pos4 i4 o4) <- runProgram arr4 0 [phases !! 4, head o3]
+    (D5.State pos4 i4 o4 _) <- runProgram arr4 0 [phases !! 4, head o3]
 
     return (head o4)
 
 
 runProgram3 phases xs = do
     arr0 <- D5.createMArray xs
-    (D5.State pos0 i0 o0) <- runProgram arr0 0 [(traceShowId phases) !! 0, 0]
+    (D5.State pos0 i0 o0 _) <- runProgram arr0 0 [(traceShowId phases) !! 0, 0]
 
     arr1 <- D5.createMArray xs
-    (D5.State pos1 i1 o1) <- runProgram arr1 0 [phases !! 1, head o0]
+    (D5.State pos1 i1 o1 _) <- runProgram arr1 0 [phases !! 1, head o0]
 
     arr2 <- D5.createMArray xs
-    (D5.State pos2 i2 o2) <- runProgram arr2 0 [phases !! 2, head o1]
+    (D5.State pos2 i2 o2 _) <- runProgram arr2 0 [phases !! 2, head o1]
 
     arr3 <- D5.createMArray xs
-    (D5.State pos3 i3 o3) <- runProgram arr3 0 [phases !! 3, head o2]
+    (D5.State pos3 i3 o3 _) <- runProgram arr3 0 [phases !! 3, head o2]
 
     arr4 <- D5.createMArray xs
-    (D5.State pos4 i4 o4) <- runProgram arr4 0 [phases !! 4, head o3]
+    (D5.State pos4 i4 o4 _) <- runProgram arr4 0 [phases !! 4, head o3]
 
     let arrArr = [arr0, arr1, arr2, arr3, arr4]
     posArr <- D5.createMArray [pos0, pos1, pos2, pos3, pos4]
 
-    res <- go arrArr posArr (cycle [0, 1, 2, 3, 4]) (head o4)
+    res <- go arrArr posArr (fmap fromIntegral $ cycle [0, 1, 2, 3, 4]) (head o4)
     return res
 
     where
@@ -96,7 +96,7 @@ resolve2 prog = L.maximum outputs
 main :: IO ()
 main = do
     text <- getContents
-    let prog = fmap read (splitOn "," text)
+    let prog = fmap (read) (splitOn "," text)
     print (resolve1 prog)
     print (resolve2 prog)
 

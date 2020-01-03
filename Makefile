@@ -12,3 +12,6 @@ day7_2_test_2:
 
 day8:
 	stack ghc Day8.hs -- -O -main-is Day8 && cat input_8.txt | ./Day8
+
+day9:
+	stack ghc Day9.hs -- -O -main-is Day9 && cat input_9.txt | ./Day9
