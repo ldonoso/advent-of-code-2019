@@ -15,3 +15,10 @@ day8:
 
 day9:
 	stack ghc Day9.hs -- -O -main-is Day9 && cat input_9.txt | ./Day9
+
+day10:
+	stack ghc Day10.hs -- -O -main-is Day10 && \
+	cat input_10.txt | ./Day10
+
+repl:
+	stack exec ghci -- Day10.hs
